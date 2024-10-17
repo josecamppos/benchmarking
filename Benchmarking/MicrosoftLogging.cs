@@ -11,34 +11,31 @@ namespace Benchmarking.Benchmarking
     [MemoryDiagnoser(true)]
     public partial class MicrosoftLogging
     {
+        ILogger _logger;
+
         public List<int> _numbers;
         public MicrosoftLogging()
         {
-            _numbers = Enumerable.Range(1, 100).ToList();
+            using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+            _logger = factory.CreateLogger<MicrosoftLogging>();
+
+            _numbers = Enumerable.Range(1, 1000).ToList();
         }
 
         [Benchmark]
         public void Log1()
         {
-            using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-            ILogger logger = factory.CreateLogger<MicrosoftLogging>();
-
             foreach (var item in _numbers)
-            {
-                logger.LogInformation("Hello World! Logging is {Description}.", Guid.NewGuid());
-            }
+            _logger.LogInformation("Hello World! Logging is {Description}.", Guid.NewGuid());
+            
         }
 
         [Benchmark]
         public void Log2()
         {
-            using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-            ILogger logger = factory.CreateLogger<MicrosoftLogging>();
-
             foreach (var item in _numbers)
-            {
-                logger.LogInformation($"Hello World! Logging is {Guid.NewGuid()}.");
-            }
+            _logger.LogInformation($"Hello World! Logging is {Guid.NewGuid()}.");
+            
         }
 
         [LoggerMessage(Level = LogLevel.Information, Message = "Hello World! Logging is {Description}.")]
@@ -46,13 +43,9 @@ namespace Benchmarking.Benchmarking
         [Benchmark]
         public void Log3()
         {
-            using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-            ILogger logger = factory.CreateLogger<MicrosoftLogging>();
-
             foreach (var item in _numbers)
-            {
-                LogStartupMessage(logger, Guid.NewGuid().ToString());
-            }
+            LogStartupMessage(_logger, Guid.NewGuid().ToString());
+            
         }
     }
 }
